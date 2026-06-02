@@ -34,16 +34,47 @@ export default function App() {
     localStorage.setItem('equiply-theme', theme);
   }, [theme]);
 
+  async function runEnrichmentPipeline(parsedRows) {
+    const ruleEnriched = enrichData(parsedRows);
+    setRows(ruleEnriched);
+
+    const reviewNeeded = ruleEnriched.filter((row) => row.needs_review);
+    if (reviewNeeded.length === 0) {
+      return;
+    }
+
+    setIsAiProcessing(true);
+    try {
+      const response = await fetch('/api/enrich-ai', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ rows: parsedRows })
+      });
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(payload.error || 'AI fallback processing failed.');
+      }
+
+      setRows(Array.isArray(payload.rows) ? payload.rows : []);
+    } catch (err) {
+      setError(err.message || 'AI enrichment failed.');
+    } finally {
+      setIsAiProcessing(false);
+    }
+  }
+
   async function handleFile(file) {
     setError('');
     setIsProcessing(true);
 
     try {
       const parsedRows = await parseCsvFile(file);
-      const enrichedRows = enrichData(parsedRows);
       setSourceRows(parsedRows);
-      setRows(enrichedRows);
       setFileName(file.name);
+      await runEnrichmentPipeline(parsedRows);
     } catch (err) {
       setError(err.message || 'Unable to parse the CSV file.');
     } finally {
@@ -63,8 +94,8 @@ export default function App() {
 
       const parsedRows = parseCsvText(await response.text());
       setSourceRows(parsedRows);
-      setRows(enrichData(parsedRows));
       setFileName('challenge_data-v1.csv');
+      await runEnrichmentPipeline(parsedRows);
     } catch (err) {
       setError(err.message || 'Unable to load challenge data.');
     } finally {
@@ -75,32 +106,6 @@ export default function App() {
   function handleExport() {
     const baseName = fileName.replace(/\.csv$/i, '') || 'equipment';
     exportRowsToCsv(rows, `${baseName}-enriched.csv`);
-  }
-
-  async function handleRunAiFallback() {
-    setError('');
-    setIsAiProcessing(true);
-
-    try {
-      const response = await fetch('/api/enrich-ai', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ rows: sourceRows })
-      });
-      const payload = await response.json();
-
-      if (!response.ok) {
-        throw new Error(payload.error || 'Unable to run AI fallback.');
-      }
-
-      setRows(Array.isArray(payload.rows) ? payload.rows : []);
-    } catch (err) {
-      setError(err.message || 'Unable to run AI fallback.');
-    } finally {
-      setIsAiProcessing(false);
-    }
   }
 
   return (
@@ -136,7 +141,7 @@ export default function App() {
         <MetricCard icon={FileSpreadsheet} label="Loaded rows" value={rows.length} />
         <MetricCard icon={CalendarClock} label="Oldest device" value={metrics.oldestDate} />
         <MetricCard icon={Activity} label="Device types" value={metrics.deviceTypeCount} />
-        <MetricCard icon={AlertTriangle} label="Needs review" value={metrics.reviewCount} />
+        <MetricCard icon={AlertTriangle} label="Needed AI fallback" value={metrics.aiCount + metrics.reviewCount} />
       </section>
 
       <section className="workspace-grid">
@@ -145,10 +150,8 @@ export default function App() {
             fileName={fileName}
             isProcessing={isProcessing}
             isAiProcessing={isAiProcessing}
-            reviewCount={metrics.reviewCount}
             onFile={handleFile}
             onLoadChallenge={handleLoadChallengeData}
-            onRunAiFallback={handleRunAiFallback}
           />
           {error ? <p className="error-message">{error}</p> : null}
 
@@ -189,10 +192,12 @@ export default function App() {
 function buildMetrics(rows) {
   const deviceTypes = new Set(rows.map((row) => row.device_type));
   const reviewCount = rows.filter((row) => row.needs_review).length;
+  const aiCount = rows.filter((row) => row.enrichment_mode === 'ai').length;
 
   return {
     oldestDate: rows[0]?.manufactured_date || 'None',
     deviceTypeCount: deviceTypes.size,
-    reviewCount
+    reviewCount,
+    aiCount
   };
 }

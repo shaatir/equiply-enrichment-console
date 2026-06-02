@@ -5,10 +5,8 @@ export default function FileUploader({
   fileName,
   isProcessing,
   isAiProcessing,
-  reviewCount,
   onFile,
-  onLoadChallenge,
-  onRunAiFallback
+  onLoadChallenge
 }) {
   const inputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -44,9 +42,11 @@ export default function FileUploader({
         onDrop={handleDrop}
       >
         <span className="drop-icon">
-          {isProcessing ? <Loader2 className="spin" size={26} /> : <UploadCloud size={28} />}
+          {isProcessing || isAiProcessing ? <Loader2 className="spin" size={26} /> : <UploadCloud size={28} />}
         </span>
-        <strong>{isProcessing ? 'Processing inventory...' : 'Drop CSV or click to browse'}</strong>
+        <strong>
+          {isProcessing || isAiProcessing ? 'Processing inventory...' : 'Drop CSV or click to browse'}
+        </strong>
         <span>{fileName}</span>
       </button>
 
@@ -62,21 +62,13 @@ export default function FileUploader({
         <button className="inline-action" type="button" onClick={onLoadChallenge}>
           Load challenge_data-v1.csv
         </button>
-        <button
-          className="inline-action"
-          type="button"
-          onClick={onRunAiFallback}
-          disabled={isProcessing || isAiProcessing || !reviewCount}
-        >
-          {isAiProcessing ? 'Running AI fallback...' : `Run AI fallback (${reviewCount})`}
-        </button>
         <div>
           <FileUp size={16} />
           CSV parser handles quoted values and messy row spacing.
         </div>
         <div>
           <FileUp size={16} />
-          Rule-based rows stay fixed while ambiguous rows can be AI-reviewed.
+          Rule-based rows stay fixed while ambiguous rows are automatically AI-reviewed.
         </div>
       </div>
     </div>
