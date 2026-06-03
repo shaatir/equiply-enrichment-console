@@ -66,3 +66,11 @@ The console runs a **three-stage evaluation**:
 2.  **Date Matching Heuristics**: Runs the serial code through manufacturer patterns (e.g. Zoll's `[Letters][2-Digit Year][Month Letter]` format, Edan's `M[2-Digit Year]` format).
 3.  **Device Classification**: Joins manufacturer, model, and serial metadata to scan against regular expressions representing standard categories (e.g. matches `puritan` to `Ventilator`, `voluson` to `Ultrasound`).
 4.  **AI Fallback**: If a row has an unresolved manufacturer, unknown device type, or missing serial, the app flags it for review (`needs_review: true`) and passes only those ambiguous rows to the LLM backend for structured resolution.
+
+---
+
+## 📺 Demonstration Video
+
+Here is a walkthrough demonstration of the Equiply Enrichment Console, showcasing the parsing solutions, user interface elements, and the automated hybrid AI enrichment workflow in action:
+
+<video src="explanation_video.mp4" controls width="100%"></video>
