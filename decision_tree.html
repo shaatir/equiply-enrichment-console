@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Equiply Enrichment Pipeline — Logic & Flowcharts</title>
+
+  <!-- Modern Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap"
+    rel="stylesheet">
+
+  <!-- Mermaid.js for Dynamic Flowchart Rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #0B0F19;
+      --surface: #131A26;
+      --surface-raised: #1C2533;
+      --surface-card: #182232;
+      --primary: #10B981;
+      --primary-glow: rgba(16, 185, 129, 0.15);
+      --accent: #3B82F6;
+      --border: #243147;
+      --text: #F1F5F9;
+      --text-muted: #94A3B8;
+      --text-strong: #FFFFFF;
+      --font-header: 'Plus Jakarta Sans', sans-serif;
+      --font-body: 'Outfit', sans-serif;
+      --font-code: 'Fira Code', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      line-height: 1.6;
+      padding-bottom: 60px;
+    }
+
+    /* Header Styling */
+    header {
+      background: radial-gradient(circle at top right, rgba(16, 185, 129, 0.08), transparent 50%),
+        linear-gradient(to bottom, var(--surface), var(--bg));
+      border-bottom: 1px solid var(--border);
+      padding: 40px 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.03) 0%, transparent 80%);
+      pointer-events: none;
+    }
+
+    .header-content {
+      max-width: 1000px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background-color: var(--primary-glow);
+      color: var(--primary);
+      font-family: var(--font-header);
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 6px 14px;
+      border-radius: 99px;
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-family: var(--font-header);
+      font-weight: 800;
+      font-size: 2.3rem;
+      color: var(--text-strong);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, var(--text-strong) 40%, var(--primary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Tabs Navigation */
+    .tabs-nav {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      max-width: 900px;
+      margin: -26px auto 40px;
+      padding: 6px;
+      position: relative;
+      z-index: 10;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-family: var(--font-header);
+      font-weight: 600;
+      font-size: 0.88rem;
+      padding: 10px 20px;
+      border-radius: 99px;
+      cursor: pointer;
+      transition: all 200ms ease;
+      white-space: nowrap;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-strong);
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+
+    .tab-btn.active {
+      background-color: var(--primary);
+      color: var(--bg);
+    }
+
+    /* Main Layout */
+    .container {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 0 20px;
+      position: relative;
+    }
+
+    .tab-content {
+      position: absolute;
+      visibility: hidden;
+      opacity: 0;
+      pointer-events: none;
+      left: 20px;
+      right: 20px;
+      transform: translateY(8px);
+      transition: opacity 300ms ease, transform 300ms cubic-bezier(0.4, 0, 0.2, 1), visibility 300ms;
+    }
+
+    .tab-content.active {
+      position: relative;
+      visibility: visible;
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+      left: auto;
+      right: auto;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Cards */
+    .card {
+      background-color: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .card-header {
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 16px;
+    }
+
+    h2 {
+      font-family: var(--font-header);
+      color: var(--text-strong);
+      font-size: 1.4rem;
+      font-weight: 700;
+    }
+
+    h3 {
+      font-family: var(--font-header);
+      color: var(--primary);
+      font-size: 1.05rem;
+      margin-bottom: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    /* Flowchart Container */
+    .flowchart-box {
+      background-color: var(--surface-raised);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin: 20px 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow-x: auto;
+    }
+
+    .mermaid {
+      background: transparent !important;
+      width: 100%;
+      text-align: center;
+    }
+
+    /* Details Grid */
+    .details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .details-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .tabs-nav {
+        flex-wrap: wrap;
+        border-radius: 20px;
+        margin-top: 20px;
+      }
+
+      .tab-btn {
+        flex: 1 1 40%;
+        text-align: center;
+      }
+
+      h1 {
+        font-size: 1.8rem;
+      }
+    }
+
+    .bullet-list {
+      list-style: none;
+    }
+
+    .bullet-list li {
+      position: relative;
+      padding-left: 24px;
+      margin-bottom: 12px;
+      color: var(--text-muted);
+      font-size: 0.92rem;
+    }
+
+    .bullet-list li::before {
+      content: "→";
+      position: absolute;
+      left: 0;
+      color: var(--primary);
+      font-weight: bold;
+    }
+
+    /* Code styling */
+    pre,
+    code {
+      font-family: var(--font-code);
+      font-size: 0.86rem;
+    }
+
+    code.inline {
+      background-color: var(--surface-raised);
+      color: var(--primary);
+      padding: 2px 6px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+
+    .code-block {
+      background-color: var(--surface-raised);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      overflow-x: auto;
+      color: #A7F3D0;
+    }
+
+    /* Brand Grid */
+    .brand-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .brand-item {
+      background-color: var(--surface-raised);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .brand-title {
+      font-family: var(--font-header);
+      font-weight: 600;
+      color: var(--text-strong);
+      font-size: 0.95rem;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand-tag {
+      background-color: var(--primary-glow);
+      color: var(--primary);
+      font-size: 0.72rem;
+      font-weight: bold;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="header-content">
+      <span class="badge">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+          stroke-linecap="round" stroke-linejoin="round" style="margin-top: -1px;">
+          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+        </svg>
+        Logic Blueprint
+      </span>
+      <h1>Pipeline Decision Trees</h1>
+      <p>Interactive mapping of the data normalization, brand heuristics, classification patterns, and AI Fallback
+        logic.</p>
+    </div>
+  </header>
+
+  <nav class="tabs-nav" aria-label="Pipeline Stages">
+    <button class="tab-btn active" onclick="switchTab('all')">Global Overview</button>
+    <button class="tab-btn" onclick="switchTab('manufacturer')">1. Manufacturer</button>
+    <button class="tab-btn" onclick="switchTab('date')">2. Date</button>
+    <button class="tab-btn" onclick="switchTab('type')">3. Device Category</button>
+    <button class="tab-btn" onclick="switchTab('ai')">4. AI Fallback</button>
+  </nav>
+
+  <main class="container">
+
+    <!-- TAB 1: ALL / GLOBAL OVERVIEW -->
+    <div id="tab-all" class="tab-content active">
+      <div class="card">
+        <div class="card-header">
+          <h2>End-to-End System Workflow</h2>
+        </div>
+        <p>This master flowchart traces a row's path from raw CSV upload, local rules execution, automated API
+          validation checks, to AI batch processing and final chronological export.</p>
+
+        <div class="flowchart-box">
+          <div class="mermaid">
+            flowchart TD
+            Start(["User Ingests CSV File"]) --> Norm["Normalize Row Headers and Strings"]
+            Norm --> Manufacturer["Resolve Manufacturer<br />Input vs Prefix Lookup"]
+            Manufacturer --> Date["Derive Manufactured Date<br />Heuristics vs Fallbacks"]
+            Date --> Device["Derive Device Type<br />DEVICE_RULES regex matching"]
+            Device --> Audit{"buildReviewReasons:<br />Does row have anomalies?"}
+
+            Audit -- Yes --> Flag["needs_review = true<br />enrichment_mode = 'ai_review'"]
+            Flag --> AutoTrigger["Frontend automatically calls /api/enrich-ai"]
+            AutoTrigger --> AILayer["Backend Batch Queue<br />Resolves via OpenAI JSON Schema"]
+            AILayer --> Merge["mergeAiResolution:<br />Override parameters, set needs_review = false"]
+
+            Audit -- No --> RuleOnly["needs_review = false<br />enrichment_mode = 'rule'"]
+
+            RuleOnly --> Sort["Sort records ascending by date"]
+            Merge --> Sort
+
+            Sort --> UI["Display Table & Render Pie Chart"]
+            UI --> Export["User exports to enriched.csv"]
+
+            style Start fill:#1E293B,stroke:#334155,stroke-width:2px,color:#fff
+            style Audit fill:#1E2638,stroke:#2563EB,stroke-width:2px,color:#fff
+            style Flag fill:#271B20,stroke:#DC2626,stroke-width:2px,color:#fff
+            style RuleOnly fill:#182823,stroke:#10B981,stroke-width:2px,color:#fff
+            style Export fill:#1E293B,stroke:#334155,stroke-width:2px,color:#fff
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: MANUFACTURER -->
+    <div id="tab-manufacturer" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h2>1. Manufacturer Identification Logic</h2>
+        </div>
+        <p>Maps the clinical name of the manufacturer and establishes the data lineage tag `manufacturer_source`.</p>
+
+        <div class="flowchart-box">
+          <div class="mermaid">
+            graph TD
+            Start(["Row Ingested"]) --> CheckInput{"Does row contain a<br />Manufacturer name?"}
+
+            CheckInput -- Yes --> UseInput["Use input manufacturer<br />manufacturer_source = 'input'"]
+            CheckInput -- No --> CheckPrefix{"Does the serial number<br />start with a known abbreviation?"}
+
+            CheckPrefix -- Yes --> MapLookup["Resolve name using lookup dictionary<br />manufacturer_source = 'serial_prefix'"]
+            CheckPrefix -- No --> MarkMissing["Set manufacturer to empty string<br />manufacturer_source = 'missing'"]
+
+            UseInput --> Finish(["Manufacturer Resolved"])
+            MapLookup --> Finish
+            MarkMissing --> Finish
+
+            style CheckInput fill:#1E293B,stroke:#334155,color:#fff
+            style CheckPrefix fill:#1E293B,stroke:#334155,color:#fff
+            style MapLookup fill:#182823,stroke:#10B981,color:#fff
+          </div>
+        </div>
+
+        <div class="details-grid">
+          <div>
+            <h3>Rules Overview</h3>
+            <ul class="bullet-list">
+              <li><strong>Sanitization</strong>: Inputs are cleaned and trimmed to eliminate layout spacing
+                discrepancies.</li>
+              <li><strong>Prefix Isolation</strong>: If empty, the serial is split on delimiters (<code
+                  class="inline">-</code>, <code class="inline">_</code>, or space) to extract the first token.</li>
+              <li><strong>Lineage Tagging</strong>: Establishes clear metadata tracing.</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Serial Prefixes Dictionary</h3>
+            <pre class="code-block">const MANUFACTURER_PREFIXES = {
+  ge: 'GE Healthcare',
+  ph: 'Philips',
+  philips: 'Philips',
+  sie: 'Siemens Healthineers',
+  siemens: 'Siemens Healthineers',
+  mdt: 'Medtronic',
+  bax: 'Baxter'
+};</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: DATE -->
+    <div id="tab-date" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h2>2. Date of Manufacture Extraction Heuristics</h2>
+        </div>
+        <p>Resolves the `manufactured_date` field (`YYYY-MM-DD`) by testing the serial key against targeted brand
+          structures and generic fallbacks.</p>
+
+        <div class="flowchart-box">
+          <div class="mermaid">
+            graph TD
+            Start(["Manufacturer and Serial Normalized"]) --> IsBrandKnown{"Is the resolved<br />manufacturer known?"}
+
+            IsBrandKnown -- Yes --> MatchBrandRule{"Does serial fit a known<br />brand barcode format?<br />e.g., Zoll, Edan, Hillrom, ADC"}
+            MatchBrandRule -- Yes --> ExtractBrandDate["Extract date from barcode<br />source = 'manufacturer_rule:brand'"]
+
+            IsBrandKnown -- No --> CheckExplicit{"Does serial contain an<br />explicit date? YYYY-MM-DD"}
+            MatchBrandRule -- No --> CheckExplicit
+
+            CheckExplicit -- Yes --> ExtractExplicit["Extract full date<br />source = 'generic:explicit_date'"]
+            CheckExplicit -- No --> CheckYearMonth{"Does serial contain<br />Year-Month? YYYY-MM"}
+
+            CheckYearMonth -- Yes --> ExtractYearMonth["Extract YYYY-MM-01<br />source = 'generic:year_month'"]
+            CheckYearMonth -- No --> CheckLetterYear{"Does serial start with<br />Letter + 2-Digit Year?"}
+
+            CheckLetterYear -- Yes --> ExtractLetterYear["Convert to YYYY-01-01<br />source = 'generic:two_digit_year_after_letter'"]
+            CheckLetterYear -- No --> CheckOtherPatterns{"Does serial match other year formats?<br />e.g., YY at start, 4-Digit year"}
+
+            CheckOtherPatterns -- Yes --> ExtractOtherYear["Extract YYYY-01-01<br />source = 'generic:pattern'"]
+            CheckOtherPatterns -- No --> CheckBrandDefault{"Does brand have a<br />conservative default date?<br />e.g., Philips = 2018, GE = 2015"}
+
+            CheckBrandDefault -- Yes --> ApplyBrandDefault["Apply default date<br />source = 'manufacturer_default:brand'"]
+            CheckBrandDefault -- No --> IndexFallback["Calculate index-based year:<br />2016 + index mod 9<br />source = 'fallback:index'"]
+
+            style IsBrandKnown fill:#1E293B,stroke:#334155,color:#fff
+            style MatchBrandRule fill:#1E293B,stroke:#334155,color:#fff
+            style CheckExplicit fill:#1E293B,stroke:#334155,color:#fff
+            style ExtractBrandDate fill:#182823,stroke:#10B981,color:#fff
+            style ExtractExplicit fill:#182823,stroke:#10B981,color:#fff
+          </div>
+        </div>
+
+        <h3>Proprietary Brand Decoders</h3>
+        <div class="brand-grid">
+          <div class="brand-item">
+            <div class="brand-title">Edan Instruments <span class="brand-tag">M[YY]</span></div>
+            <p>Matches <code class="inline">-M\d{2}</code>. Extracts 2 digits as the 21st-century year (e.g. <code
+                class="inline">M19</code> $\rightarrow$ 2019).</p>
+          </div>
+          <div class="brand-item">
+            <div class="brand-title">Zoll Medical <span class="brand-tag">Alpha-Date</span></div>
+            <p>Matches <code class="inline">^[A-Z]{1,2}(\d{2})([A-L])</code>. Translates the letter to a month (e.g.
+              <code class="inline">B</code> $\rightarrow$ Feb, <code class="inline">14</code> $\rightarrow$ 2014).</p>
+          </div>
+          <div class="brand-item">
+            <div class="brand-title">Hill-Rom <span class="brand-tag">Model Fallback</span></div>
+            <p>If not decoded from the serial, evaluates models (e.g. <code class="inline">Century</code> $\rightarrow$
+              1999-01-01, <code class="inline">P3200</code> $\rightarrow$ 2016-01-01).</p>
+          </div>
+          <div class="brand-item">
+            <div class="brand-title">American Diagnostic <span class="brand-tag">C?[YY]</span></div>
+            <p>Matches <code class="inline">^C?(\d{2})</code> at start. Converts double digits to 4-digit years.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: DEVICE TYPE -->
+    <div id="tab-type" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h2>3. Clinical Device Category Mappings</h2>
+        </div>
+        <p>Cross-references models and serial metadata against AHA EUL Guidelines and FDA Class safety standards to
+          assign device categories.</p>
+
+        <div class="flowchart-box">
+          <div class="mermaid">
+            graph TD
+            Start(["Aggregate Search Text"]) --> BuildSearch["Join manufacturer, model, and serial into search string"]
+            BuildSearch --> CheckRules{"Scan DEVICE_RULES sequentially:<br />Does a regex pattern match?"}
+
+            CheckRules -- Yes --> MatchType["Assign matching category<br />source = matching category name"]
+            CheckRules -- No --> MarkUnknown["Assign 'Unknown Device'<br />source = 'unknown'"]
+
+            MatchType --> Finish(["Device Type Derived"])
+            MarkUnknown --> Finish
+
+            style CheckRules fill:#1E293B,stroke:#334155,color:#fff
+            style MatchType fill:#182823,stroke:#10B981,color:#fff
+            style MarkUnknown fill:#271B20,stroke:#DC2626,color:#fff
+          </div>
+        </div>
+
+        <div class="details-grid">
+          <div>
+            <h3>Standard Framework Integration</h3>
+            <ul class="bullet-list">
+              <li><strong>Standardized Nomenclature</strong>: Categorization names represent clean medical terminology
+                (e.g. <em>Aneroid Sphygmomanometer</em>).</li>
+              <li><strong>Precedence Filters</strong>: Regular expression keywords contain word boundaries (<code
+                  class="inline">\b</code>) to avoid overlap bugs (e.g., preventing a Pulse Oximeter model <code
+                  class="inline">RAD8</code> from matching X-Ray's <code class="inline">rad</code> pattern).</li>
+              <li><strong>Fallthrough Mode</strong>: If rules yield no matches, the row is marked as <code
+                  class="inline">Unknown Device</code>.</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Regex Sample Patterns</h3>
+            <pre class="code-block">// DEVICE_RULES Samples
+{ type: 'Ventilator', pattern: /vent|puritan|respir/i }
+{ type: 'Ultrasound', pattern: /ultra|voluson|logiq/i }
+{ type: 'Pulse Oximeter', pattern: /\brad8\b/i }
+{ type: 'X-Ray', pattern: /xray|\brad\b/i }
+{ type: 'Aneroid Sphygmomanometer', pattern: /ce 1434/i }</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: AI FALLBACK -->
+    <div id="tab-ai" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h2>4. Validation & AI Review Routing</h2>
+        </div>
+        <p>Details the logic-based check and backend structured queueing pipeline for ambiguous records.</p>
+
+        <div class="flowchart-box">
+          <div class="mermaid">
+            graph TD
+            Start(["Inspect Enriched Row"]) --> CheckAnomalies{"Does row contain any of:<br />1. Missing/Unresolved Manufacturer<br />2. Brand default or index fallback date<br />3. Unknown Device Type<br />4. Missing Serial Number?"}
+
+            CheckAnomalies -- Yes --> SetReview["needs_review = true<br />enrichment_mode = 'ai_review'"]
+            CheckAnomalies -- No --> SetRule["needs_review = false<br />enrichment_mode = 'rule'<br />(Row Resolved)"]
+
+            SetRule --> Finish(["Output Row"])
+
+            SetReview --> AutoTrigger["Frontend automatically queues row for AI API"]
+            AutoTrigger --> ResolveAI["AI backend resolves details using JSON Schema"]
+            ResolveAI --> MergeResults["Merge updates into row<br />source = 'ai'<br />needs_review = false<br />enrichment_mode = 'ai'"]
+            MergeResults --> Finish
+
+            style CheckAnomalies fill:#1E293B,stroke:#334155,color:#fff
+            style SetReview fill:#271B20,stroke:#DC2626,color:#fff
+            style SetRule fill:#182823,stroke:#10B981,color:#fff
+            style AutoTrigger fill:#1E293B,stroke:#334155,color:#fff
+          </div>
+        </div>
+
+        <div class="details-grid">
+          <div>
+            <h3>Audit Check & Confidence Cutoff</h3>
+            <ul class="bullet-list">
+              <li><strong>Point Deductions</strong>: Low confidence scores are caused by fallback index years (<code
+                  class="inline">-35%</code>), unknown categories (<code class="inline">-30%</code>), or brand default
+                dates (<code class="inline">-20%</code>).</li>
+              <li><strong>The Cutoff</strong>: Any record with a score of <strong>80% or lower</strong> is automatically
+                flagged for review.</li>
+              <li><strong>Automation</strong>: Staged rows are submitted silently to the local endpoint in the
+                background without halting UI interactions.</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Queueing & Batching</h3>
+            <ul class="bullet-list">
+              <li><strong>Concurrent Queue</strong>: Front-end requests are gathered in a local Node queue
+                (`createBatchQueue`).</li>
+              <li><strong>JSON Schema Enforcement</strong>: The server batches records (size: `10`) and queries OpenAI
+                using strict JSON schemas to prevent hallucinations.</li>
+              <li><strong>Lineage Tag</strong>: Once resolved, the origin is changed to `'ai'`, and confidence scores
+                are re-evaluated.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // Mermaid initialization
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      securityLevel: 'loose',
+      flowchart: {
+        useWidth: true,
+        htmlLabels: true
+      }
+    });
+
+    // Tab Switching Logic
+    function switchTab(tabId) {
+      // Toggle Tab Buttons
+      const buttons = document.querySelectorAll('.tab-btn');
+      buttons.forEach(btn => btn.classList.remove('active'));
+
+      const activeBtn = Array.from(buttons).find(btn => btn.textContent.toLowerCase().includes(tabId));
+      if (activeBtn) activeBtn.classList.add('active');
+      else if (tabId === 'all') buttons[0].classList.add('active');
+
+      // Toggle Tab Contents
+      const contents = document.querySelectorAll('.tab-content');
+      contents.forEach(content => content.classList.remove('active'));
+
+      const targetContent = document.getElementById('tab-' + tabId);
+      if (targetContent) {
+        targetContent.classList.add('active');
+      }
+    }
+  </script>
+</body>
+
+</html>

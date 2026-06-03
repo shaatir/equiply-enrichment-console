@@ -79,6 +79,22 @@ The console runs a **three-stage evaluation**:
 
 ---
 
+## 🗺️ Visual Decision Trees & Flowcharts
+
+To make the multi-stage parsing logic easily auditable, we have compiled the rules-engine decisions and data routing flows into interactive diagrams:
+
+*   **Interactive HTML Dashboard**: Open [decision_tree.html](file:///Users/ruchirjoshi/Projects/equiply-enrichment-console/decision_tree.html) in any browser to explore the logic with color-coded, smooth-tabbed diagrams and code blocks.
+*   **Static Markdown Diagrams**: See [decision_tree.md](file:///Users/ruchirjoshi/Projects/equiply-enrichment-console/decision_tree.md) to inspect the Mermaid.js source diagrams directly on GitHub.
+
+These flowcharts map the entire path of a row:
+1. **Global Overview**: The end-to-end user ingest to AI fallback queue and sorting.
+2. **Manufacturer Identification**: Sanitization and serial number prefix dictionaries.
+3. **Date Heuristics**: Zoll, Edan, Hillrom, ADC decoders and generic year/month fallbacks.
+4. **Device Category Matching**: Sequential regex scan boundaries.
+5. **AI Validation & Routing**: Point deductions, threshold confidence scoring, and OpenAI JSON Schema batch queueing.
+
+---
+
 ## 📺 Demonstration Video
 
 Here is a walkthrough demonstration of the Equiply Enrichment Console, showcasing the parsing solutions, user interface elements, and the automated hybrid AI enrichment workflow in action:

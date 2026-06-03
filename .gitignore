@@ -34,3 +34,7 @@ lerna-debug.log*
 # OS files
 .DS_Store
 Thumbs.db
+
+# Large media files and output files
+*.mov
+enriched.csv

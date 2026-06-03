@@ -3,6 +3,9 @@
 
 This document explains the data ingestion, parsing methodology, and enrichment pipeline used to clean and categorize medical equipment inventory.
 
+> [!TIP]
+> **Visual Flowcharts & Decision Trees**: For a visual diagram of these rules, check out the interactive [decision_tree.html](file:///Users/ruchirjoshi/Projects/equiply-enrichment-console/decision_tree.html) dashboard in your browser, or see the static [decision_tree.md](file:///Users/ruchirjoshi/Projects/equiply-enrichment-console/decision_tree.md) file.
+
 ---
 
 ## 1. Project Objective & Standards
