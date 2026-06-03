@@ -13,6 +13,8 @@ For healthcare asset management, capital planning, and lifecycle modeling (the c
 *   **The American Hospital Association (AHA) Estimated Useful Lives (EUL) Guidelines**: The healthcare industry standard for determining how many years a specific piece of equipment should remain in service before replacement (lifecycle planning).
 *   **The U.S. Food and Drug Administration (FDA) Device Classification**: Classification codes that rank equipment by safety and regulatory control requirements (Class I for low risk, Class II for intermediate risk, and Class III for high risk/sustained life support).
 
+*Note: In the project output, the column labeled `device_type` functions as the standardized `device_category` dimension derived from these healthcare frameworks.*
+
 The regex pattern matching rules inside `DEVICE_RULES` are programmatically derived by matching device names and models against these standard databases.
 
 ---
@@ -82,9 +84,9 @@ A starting score of `100%` is assessed for each row, and point deductions are ma
 
 ### AI-Assisted Enrichment (Hybrid Flow)
 1. **Anomaly Detection**: Rows with unresolved manufacturers, unknown device types, missing serial numbers, or index fallback dates are marked as `needs_review: true`.
-2. **Targeted AI Request**: When the user triggers the AI fallback, *only* the flagged rows are queued.
+2. **Automated AI Request**: The frontend automatically detects if any rows require review after the rules-based pass is complete, and instantly queues them for backend processing.
 3. **Structured Integration**: The local API sends these records to OpenAI with a structured JSON schema, allowing the LLM to research, infer, and override the missing values with high precision.
-4. **Data Merging**: Enriched AI records are merged back, updating the confidence score and tagging the lineage of the changes.
+4. **Data Merging**: Enriched AI records are merged back, updating the confidence score, setting `needs_review` to `false`, and tagging the lineage of the changes.
 
 ---
 

@@ -7,7 +7,7 @@ import { sortByManufacturedDate } from '../src/utils/enricher.js';
 import { enrichRowsWithOpenAi } from '../server/openaiEnrichment.js';
 
 const DEFAULT_INPUT = path.resolve(process.cwd(), 'challenge_data-v1.csv');
-const DEFAULT_OUTPUT = path.resolve(process.cwd(), 'challenge_data-v1-enriched-ai.csv');
+const DEFAULT_OUTPUT = path.resolve(process.cwd(), 'enriched.csv');
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
