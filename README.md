@@ -73,4 +73,6 @@ The console runs a **three-stage evaluation**:
 
 Here is a walkthrough demonstration of the Equiply Enrichment Console, showcasing the parsing solutions, user interface elements, and the automated hybrid AI enrichment workflow in action:
 
-<video src="explanation_video.mp4" controls width="100%"></video>
+![Walkthrough Video](explanation_video.mp4)
+
+*(If the player does not load, you can download or watch the file directly here: [explanation_video.mp4](explanation_video.mp4))*
