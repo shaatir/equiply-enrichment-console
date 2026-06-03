@@ -5,11 +5,15 @@ This document explains the data ingestion, parsing methodology, and enrichment p
 
 ---
 
-## 1. Project Objective
+## 1. Project Objective & Standards
 
-The challenge is to take a raw spreadsheet of hospital equipment data containing basic identifiers (`manufacturer`, `model`, `serial_number`) and enrich it with two high-value fields:
-1. **Manufactured Date** (`manufactured_date`): Cleaned and standardized to `YYYY-MM-DD`.
-2. **Device Type** (`device_type`): The category or classification of the medical device (e.g., Ventilator, Patient Monitor).
+The challenge is to take a raw spreadsheet of hospital equipment data containing basic identifiers (`manufacturer`, `model`, `serial_number`) and enrich it with standardized clinical device classifications and manufacture dates.
+
+For healthcare asset management, capital planning, and lifecycle modeling (the core functions of platforms like Equiply), records are universally enriched using classifications and metrics derived from two primary data frameworks:
+*   **The American Hospital Association (AHA) Estimated Useful Lives (EUL) Guidelines**: The healthcare industry standard for determining how many years a specific piece of equipment should remain in service before replacement (lifecycle planning).
+*   **The U.S. Food and Drug Administration (FDA) Device Classification**: Classification codes that rank equipment by safety and regulatory control requirements (Class I for low risk, Class II for intermediate risk, and Class III for high risk/sustained life support).
+
+The regex pattern matching rules inside `DEVICE_RULES` are programmatically derived by matching device names and models against these standard databases.
 
 ---
 

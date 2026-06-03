@@ -2,6 +2,16 @@
 
 A medical equipment inventory enrichment console built with React, Vite, and custom Node server middleware. This dashboard parses raw hospital equipment datasets (CSV files containing manufacturer, model, and serial number), standardizes metadata, and derives correct classifications and dates of manufacture using a hybrid deterministic-and-AI pipeline.
 
+## 🩺 Industry Standard Frameworks
+
+For healthcare asset management, capital planning, and lifecycle modeling (the core functions of platforms like Equiply), records are enriched using classifications derived from two primary data frameworks:
+1.  **The American Hospital Association (AHA) Estimated Useful Lives (EUL) Guidelines**: The healthcare industry standard for determining how many years a specific piece of equipment should remain in service before replacement (lifecycle planning).
+2.  **The U.S. Food and Drug Administration (FDA) Device Classification**: Classification codes that rank equipment by safety and regulatory control requirements (Class I for low risk, Class II for intermediate risk, and Class III for high risk/sustained life support).
+
+The regex pattern matching rules inside `DEVICE_RULES` are programmatically mapped directly to matching standardized nomenclature in these databases.
+
+---
+
 ## 🚀 Features
 
 *   **CSV File Ingestion**: Upload custom spreadsheet logs or load standard challenge datasets directly.
